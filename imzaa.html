@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtSign</title>
+    <style>
+        @font-face {
+            font-family: 'Bianca';
+            src: url('./fonts/Biancha.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Darling' ;
+            src: url('./fonts/darling.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Bofly';
+            src: url('./fonts/Bofly.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Demo';
+            src: url('./fonts/Demo.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Violante' ;
+            src: url('./fonts/Violante.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Demo2';
+            src: url('./fonts/demo2.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Demo3';
+            src: url('./fonts/demo3.otf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Demo4';
+            src: url('./fonts/demo4.otf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Kalste';
+            src: url('./fonts/Kalste.otf') format('truetype');
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            background-image: url('33.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .controls {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .controls input, .controls select, .controls button {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .controls button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .controls button:hover {
+            background-color: #2980b9;
+        }
+
+        #signatureCanvas {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+            margin-top: 50px;
+        }
+
+        #animatedSignature {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            white-space: nowrap;
+        }
+
+        #signature {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #signature-path {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #pen {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .color-combinations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .color-combinations h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+        .color-combinations button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+
+        .bounce { animation: bounce 2s infinite; }
+
+        .draw-signature {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 5s forwards;
+        }
+
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            20%, 80% { opacity: 1; transform: scale(1.2); }
+            50% { opacity: 1; transform: scale(1.4); }
+        }
+
+        @keyframes glitter {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .sparkle-text span {
+            display: inline-block;
+            opacity: 0;
+            position: relative;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sparkle-text span::before,
+        .sparkle-text span::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: rgb(219, 191, 65);
+            box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.7);
+            opacity: 0;
+        }
+
+        .sparkle-text span.animate {
+            opacity: 1;
+        }
+
+        .sparkle-text span.animate::before {
+            animation: sparkle 0.8s forwards;
+        }
+
+        .sparkle-text span.animate::after {
+            animation: glitter 0.5s 0.3s infinite;
+        }
+
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <h1>ArtSign</h1>
+    <div class="controls">
+        <label for="signatureText">İmza Metni:</label>
+        <input type="text" id="signatureText" placeholder="İmzanız">
+
+        <label for="fontSelect">Font:</label>
+        <select id="fontSelect">
+            <option value="Yok">Yok</option>
+            <option value="Darling">Darling</option>
+            <option value="Bianca">Bianca</option>
+            <option value="Bofly">Bofly</option>
+            <option value="Demo">Demo</option>
+            <option value="Violante">Violante</option>
+            <option value="Demo2">Demo2</option>
+            <option value="Demo3">Demo3</option>
+            <option value="Demo4">Demo4</option>
+            <option value="Kalste">Kalste</option>
+        </select>
+
+        <label for="textColor">Metin Rengi:</label>
+        <input type="color" id="textColor" value="#000000">
+
+        <label for="bgColor">Arka Plan Rengi:</label>
+        <input type="color" id="bgColor" value="#ffffff">
+
+        <label for="animationSelect">Animasyon:</label>
+        <select id="animationSelect">
+            <option value="none">Yok</option>
+            <option value="bounce">Zıplama</option>
+            <option value="draw-signature">İmza Çiz</option>
+            <option value="draw-with-pen">Kalemle Çiz</option>
+        </select>
+
+        <button onclick="generateSignature()">İmza Oluştur</button>
+        <button onclick="downloadSignature()">İndir</button>
+        <button onclick="downloadBrowserCompatibleGIF()">GIF İndir</button>
+        <button onclick="clearSignature()">Temizle</button>
+    </div>
+
+    <div class="color-combinations">
+        <h3>Arka Plan Kombinasyonları</h3>
+        <button style="background-image: url('stone.jpg');" onclick="setBackground('url(stone.jpg)')"></button>
+        <button style="background-image: url('thunder.jpg');" onclick="setBackground('url(thunder.jpg)')"></button>
+        <button style="background-image: url('su.jpg');" onclick="setBackground('url(su.jpg)')"></button>
+        <button style="background-image: url('1.jpg');" onclick="setBackground('url(1.jpg)')"></button>
+        <button style="background-image: url('cicek.png');" onclick="setBackground('url(cicek.png)')"></button>
+        <button style="background-image: url('flow.jpg');" onclick="setBackground('url(flow.jpg)')"></button>
+        <input type="file" id="imageUpload" accept="image/*" onchange="uploadImage(event)" style="width: 50px; height: 50px; border: none; cursor: pointer; border-radius: 5px; background-color: transparent; padding: 0; margin: 0;">
+    </div>
+
+    <div id="signatureCanvas">
+        <div id="animatedSignature"></div>
+        <svg id="signature" viewBox="0 0 500 200" style="display: none;">
+            <path id="signature-path" d="" />
+        </svg>
+        <img id="pen" src="kalem.png" alt="Pen" style="display: none;">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/antimatter15/jsgif/GIFEncoder.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/antimatter15/jsgif/LZWEncoder.js"></script>
+  
+    <script>
+      let newFontPaths = null;
+     
+function loadFonts() {
+    Promise.all([
+        fetch("data.json").then(response => response.json()),
+        fetch("data1.json").then(response => response.json()),
+        fetch("data2.json").then(response => response.json()),
+        fetch("data3.json").then(response => response.json()),
+        fetch("data4.json").then(response => response.json()), 
+        fetch("data5.json").then(response => response.json()), 
+        fetch("data6.json").then(response => response.json()),
+        fetch("data7.json").then(response => response.json()),
+        fetch("data8.json").then(response => response.json())
+    ]).then(([darlingData, BoflyData, biancaData, demoData, violanteData, demo2Data, demo3Data, demo4Data, kalsteData]) => {
+        darlingPaths = darlingData;
+        BoflyPaths = BoflyData;
+        biancaPaths = biancaData;
+        demoPaths = demoData;
+        violantePaths = violanteData; 
+        demo2Paths = demo2Data; 
+        demo3Paths = demo3Data; 
+        demo4Paths = demo4Data;
+        kalstePaths = kalsteData;
+        console.log('Fonts loaded');
+        console.log('demo4 loaded:', demo4Paths);
+        console.log('Kalste loaded:', kalstePaths);
+    }).catch(error => console.error('Error loading fonts:', error));
+}
+
+document.addEventListener('DOMContentLoaded', loadFonts);
+function createLetterPath(letter, x, y, width, height, isUpperCase) {
+    const selectedFont = document.getElementById('fontSelect').value;
+    const animation = document.getElementById('animationSelect').value;
+
+    if (selectedFont === 'Darling' && darlingPaths && darlingPaths[letter.toLowerCase()]) {
+        return scaleFontPath(darlingPaths[letter.toLowerCase()], x, y, width, height);
+    } else if (selectedFont === 'Bofly' && BoflyPaths && BoflyPaths[letter.toLowerCase()]) {
+        if (animation === 'draw-with-pen') {
+            return scaleFontPath(BoflyPaths[letter.toLowerCase()], x, y, width * 0.5, height * 0.5);
+        } else {
+            return scaleFontPath(BoflyPaths[letter.toLowerCase()], x, y, width, height);
+        }
+    } else if (selectedFont === 'Bianca' && biancaPaths && biancaPaths[letter.toLowerCase()]) {
+        if (animation === 'draw-with-pen') {
+            return scaleFontPath(biancaPaths[letter.toLowerCase()], x, y, width * 0.5, height * 0.5);
+        } else {
+            return scaleFontPath(biancaPaths[letter.toLowerCase()], x, y, width, height);
+        }
+    } else if (selectedFont === 'Demo' && demoPaths && demoPaths[letter.toLowerCase()]) {
+        return scaleFontPath(demoPaths[letter.toLowerCase()], x, y, width, height);
+    } else if (selectedFont === 'Violante' && violantePaths && violantePaths [letter.toLowerCase()]) {
+        return scaleFontPath(violantePaths[letter.toLowerCase()], x, y, width, height);
+    } else if (selectedFont === 'Demo2' && demo2Paths && demo2Paths[letter.toLowerCase()]) {
+        return scaleFontPath(demo2Paths[letter.toLowerCase()], x, y, width, height);
+    } else if (selectedFont === 'Demo3' && demo3Paths && demo3Paths[letter.toLowerCase()]) {
+        return scaleFontPath(demo3Paths[letter.toLowerCase()], x, y, width, height);
+    } else if (selectedFont === 'Demo4' && demo4Paths && demo4Paths[letter.toLowerCase()]) {
+        return scaleFontPath(demo4Paths[letter.toLowerCase()], x, y, width, height); // Yeni fontu ekleyin
+    } else if (selectedFont === 'Kalste' && kalstePaths && kalstePaths[letter.toLowerCase()]) {
+        return scaleFontPath(kalstePaths[letter.toLowerCase()], x, y, width, height);
+    }
+    const paths = [];
+    const smallHeight = isUpperCase ? height : height * 0.5;
+    const yOffset = isUpperCase ? 0 : height * 0.3;
+
+    return paths.join(' ');
+}
+function createSignaturePath(text, width, height) {
+    const paths = [];
+    const letterHeight = height * 0.6;
+    let x = 0;
+    const y = height * 0.4;
+
+    for (let i = 0; i < text.length; i++) {
+        const letter = text[i];
+        const letterWidth = calculateLetterWidth(letter, width, text.length);
+        const path = createLetterPath(letter, x, y, letterWidth, letterHeight, letter.toUpperCase() === letter);
+        if (path) {
+            paths.push(path);
+        }
+        x += letterWidth;
+    }
+
+    return paths;
+}
+function calculateLetterWidth(letter, totalWidth, totalLetters) {
+    const letterWidths = {
+        'a': 0.5,
+        'b': 0.6,
+        'c': 0.5,
+        'd': 0.4,
+        'e': 0.5,
+        'f': 0.4,
+        'g': 0.6,
+        'h': 0.6,
+        'i': 0.3,
+        'ı': 0.3,
+        'j': 0.4,
+        'k': 0.5,
+        'l': 0.3,
+        'm': 0.8,
+        'n': 0.6,
+        'o': 0.6,
+        'p': 0.6,
+        'q': 0.6,
+        'r': 0.5,
+        's': 0.5,
+        't': 0.4,
+        'u': 0.6,
+        'ü': 0.6,
+        'v': 0.5,
+        'w': 0.8,
+        'x': 0.5,
+        'y': 0.5,
+        'z': 0.5,
+        ' ': 0.3 // Boşluk genişliği
+    };
+
+    const defaultWidth = 0.5; // Belirtilmeyen harfler için varsayılan genişlik
+    return (letterWidths[letter.toLowerCase()] || defaultWidth) * totalWidth / totalLetters;
+}
+function scaleFontPath(path, x, y, width, height) {
+    const originalWidth = 1000;
+    const originalHeight = 1000;
+    const scaleX = width / originalWidth;
+    const scaleY = height / originalHeight;
+
+    const commands = path.match(/([A-Z]|-?\d*\.?\d+)/g);
+    let newPath = '';
+    let isX = true;
+
+    for (let i = 0; i < commands.length; i++) {
+        if (isNaN(commands[i])) {
+            newPath += commands[i];
+            isX = true; // Her yeni komuttan sonra X koordinatından başlayalım
+        } else {
+            const num = parseFloat(commands[i]);
+            if (isX) {
+                newPath += (num * scaleX + x).toFixed(2) + ' ';
+            } else {
+                newPath += (num * scaleY + y).toFixed(2) + ' ';
+            }
+            isX = !isX;
+        }
+    }
+
+    return newPath.trim();
+}
+function createDarlingLetterPath(letter, x, y, width, height) {
+    // Darling fontu için basitleştirilmiş path oluşturma
+    const centerX = x + width / 2;
+    const topY = y - height / 2;
+    const bottomY = y + height / 2;
+    return [ `M${x},${bottomY} Q${centerX},${topY} ${x + width},${bottomY}` ];
+}
+function generateSignature() {
+            const animatedSignature = document.getElementById('animatedSignature');
+            const signatureCanvas = document.getElementById('signatureCanvas');
+            const bgColor = document.getElementById('bgColor').value;
+            const signatureText = document.getElementById('signatureText').value;
+            const selectedFont = document.getElementById('fontSelect').value;
+            const animation = document.getElementById('animationSelect').value;
+            const textColor = document.getElementById('textColor').value;
+
+            signatureCanvas.style.backgroundColor = bgColor;
+   
+            animatedSignature.innerHTML = '';
+            animatedSignature.className = '';
+            const signature = document.getElementById('signature');
+            const pen = document.getElementById('pen');
+            signature.style.display = 'none';
+            pen.style.display = 'none';
+
+            if (animation === 'draw-with-pen' || animation === 'draw-signature') {
+                signature.style.display = 'block';
+        
+                const paths = createSignaturePath(signatureText, signatureCanvas.clientWidth * 0.8, signatureCanvas.clientHeight * 0.8);
+                signature.innerHTML = paths.map((path, index) => 
+                    `<path id="path-${index}" d="${path}" fill="${textColor}" stroke="${textColor}" stroke-width="2" />`
+                ).join('');
+
+                if (animation === 'draw-with-pen') {
+                    pen.style.display = 'block';
+                    animatePen(paths);
+                } else {
+                    signature.querySelectorAll('path').forEach(path => {
+                        path.classList.add('draw-signature');
+                    });
+                }
+            } else if (animation === 'sparkle') {
+                animatedSignature.innerHTML = signatureText.split('').map(char => 
+                    `<span style="font-family: ${selectedFont}; color: ${textColor};">${char}</span>`
+                ).join('');
+                animatedSignature.classList.add('sparkle-text');
+                animateEnhancedSparkle();
+            } else {
+                animatedSignature.innerHTML = `<span style="font-family: ${selectedFont}; color: ${textColor};">${signatureText}</span>`;
+                animatedSignature.style.fontFamily = selectedFont;
+                animatedSignature.style.color = textColor;
+
+                void animatedSignature.offsetWidth;
+                animatedSignature.classList.add(animation);
+            }
+        }
+
+        function animateEnhancedSparkle() {
+            const letters = document.querySelectorAll('.sparkle-text span');
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    letter.style.animation = `appear 0.5s ${index * 0.1}s forwards`;
+                    setTimeout(() => {
+                        letter.classList.add('animate');
+                    }, index * 100 + 500);
+                }, index * 100);
+            });
+        }
+        // Animasyon seçeneklerine 'sparkle' ekleyin (eğer daha önce eklenmemişse)
+        const animationSelect = document.getElementById('animationSelect');
+        if (!Array.from(animationSelect.options).some(option => option.value === 'sparkle')) {
+            const sparkleOption = document.createElement('option');
+            sparkleOption.value = 'sparkle';
+            sparkleOption.textContent = 'Işıltılı Görünüm';
+            animationSelect.appendChild(sparkleOption);
+        }
+function animatePen(paths) {
+    const pen = document.getElementById("pen");
+    const signature = document.getElementById("signature");
+    let currentPathIndex = 0;
+    let startTime;
+
+    function animatePath(time) {
+        if (!startTime) startTime = time;
+        const elapsed = time - startTime;
+        const duration = 1500; // Kalemin hızı
+        const progress = Math.min(elapsed / duration, 1);
+
+        const currentPath = signature.querySelector(`#path-${currentPathIndex}`);
+        if (!currentPath) {
+            console.error('Path not found:', currentPathIndex);
+            return;
+        }
+
+        const length = currentPath.getTotalLength();
+        const point = currentPath.getPointAtLength(progress * length);
+
+        pen.style.transform = `translate(${point.x}px, ${point.y}px)`;
+        currentPath.style.strokeDasharray = length;
+        currentPath.style.strokeDashoffset = length * (1 - progress);
+
+        if (progress < 1) {
+            requestAnimationFrame(animatePath);
+        } else if (currentPathIndex < paths.length - 1) {
+            currentPathIndex++;
+            startTime = null;
+            requestAnimationFrame(animatePath);
+        }
+    }
+
+    requestAnimationFrame(animatePath);
+}
+// Hata ayıklama için yardımcı fonksiyon
+function logPaths() {
+    const signatureText = document.getElementById('signatureText').value;
+    const paths = createSignaturePath(signatureText, 380, 140);
+    console.log('Generated Paths:', paths);
+}
+        function downloadSignature() {
+            const signatureCanvas = document.getElementById('signatureCanvas');
+            const animatedSignature = document.getElementById('animatedSignature');
+            const animation = document.getElementById('animationSelect').value;
+            const originalAnimation = animatedSignature.style.animation;
+            animatedSignature.style.animation = 'none';
+
+            if (animation === 'draw-signature') {
+                const svgElement = animatedSignature.querySelector('svg');
+                if (svgElement) {
+                    const textElement = svgElement.querySelector('text');
+                    textElement.style.strokeDashoffset = '0';
+                }
+            }
+
+            setTimeout(() => {
+                html2canvas(signatureCanvas, {
+                    backgroundColor: null,
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    const dataURL = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = dataURL;
+                    link.download = 'signature.png';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    setTimeout(() => {
+                        animatedSignature.style.animation = originalAnimation;
+                        if (animation !== 'none' && !animatedSignature.classList.contains(animation)) {
+                            animatedSignature.classList.add(animation);
+                        }
+                        if (animation === 'draw-signature') {
+                            const svgElement = animatedSignature.querySelector('svg');
+                            if (svgElement) {
+                                const textElement = svgElement.querySelector('text');
+                                textElement.style.strokeDashoffset = '';
+                            }
+                        }
+                    }, 100);
+                });
+            }, 100);
+        }
+        function clearSignature() {
+    const signatureText = document.getElementById('signatureText');
+    const fontSelect = document.getElementById('fontSelect');
+    const textColor = document.getElementById('textColor');
+    const bgColor = document.getElementById('bgColor');
+    const animationSelect = document.getElementById('animationSelect');
+    signatureText.value = '';
+    signatureText.focus();
+    fontSelect.selectedIndex = 0;
+    textColor.value = '#000000';
+    bgColor.value = '#ffffff';
+    animationSelect.selectedIndex = 0;
+    const signatureCanvas = document.getElementById('signatureCanvas');
+    signatureCanvas.style.backgroundImage = '';
+    signatureCanvas.style.backgroundColor = '#f4f4f4';
+    const animatedSignature = document.getElementById('animatedSignature');
+    animatedSignature.innerHTML = '';
+    const signature = document.getElementById('signature');
+    signature.innerHTML = '';
+    const pen = document.getElementById('pen');
+    pen.style.display = 'none';
+    const imageUpload = document.getElementById('imageUpload');
+    imageUpload.value = '';
+}
+        function setBackground(background) {
+            const signatureCanvas = document.getElementById('signatureCanvas');
+            signatureCanvas.style.backgroundImage = background;
+            signatureCanvas.style.backgroundSize = 'cover'; // veya 'contain'
+            signatureCanvas.style.backgroundRepeat = 'no-repeat';
+            if (background.startsWith('#')) {
+                document.getElementById('bgColor').value = background;
+            }
+            generateSignature();
+        }
+
+        function uploadImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                setBackground(`url('${e.target.result}')`);
+            }
+            reader.readAsDataURL(file);
+        }
+        // GIFEncoder ve LZWEncoder'ı ekleyin (aşağıda bağlantıları verilmiştir)
+
+function downloadBrowserCompatibleGIF() {
+    const signatureCanvas = document.getElementById('signatureCanvas');
+    const animation = document.getElementById('animationSelect').value;
+    const frameCount = 20;
+    let currentFrame = 0;
+
+    // GIF encoder'ı başlat
+    const encoder = new GIFEncoder();
+    encoder.setRepeat(0); // 0 = sonsuz döngü
+    encoder.setDelay(100); // Her kare arası 100ms
+    encoder.start();
+
+    function captureFrame() {
+        console.log(`Capturing frame ${currentFrame + 1} of ${frameCount}`);
+        
+        html2canvas(signatureCanvas).then(canvas => {
+            // Kareyi GIF'e ekle
+            encoder.addFrame(canvas.getContext('2d'));
+            
+            currentFrame++;
+
+            if (currentFrame < frameCount) {
+                // Basit animasyon güncelleme
+                if (animation === 'bounce') {
+                    const y = Math.sin(currentFrame / 3) * 10;
+                    signatureCanvas.style.transform = `translateY(${y}px)`;
+                }
+                requestAnimationFrame(captureFrame);
+            } else {
+                console.log('GIF capture completed');
+                // GIF kodlamayı bitir
+                encoder.finish();
+                
+                // GIF'i indir
+                const binary_gif = encoder.stream().getData();
+                const data_url = 'data:image/gif;base64,' + btoa(binary_gif);
+                const link = document.createElement('a');
+                link.href = data_url;
+                link.download = 'animated_signature.gif';
+                link.click();
+
+                // Animasyonu sıfırla
+                signatureCanvas.style.transform = '';
+            }
+        }).catch(error => {
+            console.error('Error capturing frame:', error);
+        });
+    }
+
+    console.log('Starting GIF capture...');
+    captureFrame();
+}
+    </script>
+</body>
+</html>
+
